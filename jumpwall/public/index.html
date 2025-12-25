@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en"> 
+    <head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <title>Air wall</title>
+    </head>
+    <body>
+        <style>
+            html {
+    background: lightblue; 
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 0.1;
+}
+            body{
+                z-index: 0.1;
+                background-color: lightblue;
+                background-size: cover;
+                background-repeat: no-repeat;
+                margin: 0;
+                overflow: hidden;
+                z-index: 0.1;
+            }
+
+            #wind{
+                font-size: 80px;
+                position: absolute;
+                z-index: 1;
+            }
+
+            #missile{
+                left: 300px;
+                top: 50%;
+                font-size: 60px;
+                position: absolute;
+                z-index: 2;
+            }
+
+            #startgamebtn{
+                height: 50px;
+                width: 120px;
+                left: 50%;
+                top: 50%;
+                font-size: 30px;
+                transform: translate(-50%, -50%);
+                background-color: yellow;
+                position: absolute;
+                border-radius: 10px;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 1000;
+            }
+            #welcome{
+                left: 50%;
+                top: 40%;
+                font-size: 50px;
+                transform: translate(-50%, -40%);
+                position: absolute;
+                z-index: 1000;
+            }
+            #levels{
+                left: 50%;
+            top: 25%;
+            height: 50px;
+            width: 150px;
+            position: absolute;
+            z-index: 1000;
+            transform: translate(-50%, -25%);
+            background-color: blue;
+            font-size: 20px;
+}
+
+            .wall{
+                position: absolute;
+                top: 0;
+                width: 120px;
+                height: 100vh;
+                background-color: green;
+                right: -200px; 
+                z-index: 1;
+            }
+
+            .gap{
+                position: absolute;
+                width: 120px;
+                height: 180px; 
+                background-color: lightblue; 
+            }
+            #coinboard{
+                top: 0px;
+                right: 0px;
+                height: 200px;
+                width: 200px;
+                background-color: black;
+                position: absolute;
+                z-index: 100000000000000;
+            }
+            #coinlive{
+                font-size: 20px;
+                position: absolute;
+                color: white;
+                font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            }
+            #coin{
+                z-index: 0.2;
+                font-size: 50px;
+                position: absolute;
+            }
+            #levelknow{
+                font-size: 30px;
+                top: 20px;
+                left: 20px;
+                color: red;
+                position: absolute;
+            }
+            #alerta {
+    position: absolute;  
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 90px;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    color: orange;
+    z-index: 1000000000000000000;  
+    text-align: center;
+    pointer-events: none;
+    width: 100%; 
+}
+#screenshot{
+                left: 50%;
+            top: 34%;
+            height: 50px;
+            width: 150px;
+            position: absolute;
+            z-index: 3;
+            transform: translate(-50%, -34%);
+            background-color: #4B0082;
+            font-size: 20px;
+            color: white;
+}
+#reader{
+    font-size: 25px;
+    position: absolute;
+    top: 5%;
+    left: 4%;
+}
+#closetenerbtn{
+    top: 0px;
+    right: 0px;
+    height: 70px;
+    width: 70px;
+    background-color: red;
+    position: absolute;
+}
+#winwrite{
+    z-index: 100000000000000000000000000;
+    position: absolute;
+    top: 32%;
+    left: 32%;
+    height: 450px;
+    width: 450px;
+    background: linear-gradient(135deg, #4b0082, #1e90ff);
+    color: white;
+}
+#winput{
+    position: absolute;
+    top: 20%;
+    left: 40%; 
+    height: 70px;
+    left: 140px;
+    font-size: 15px;
+}
+#addnamebtn{
+    top: 35%;
+    left: 40%;
+    height: 40px;
+    left: 140px;
+    font-size: 15px;
+    background-color: gold;
+    color: black;
+    position: absolute;
+}
+        </style>
+
+        <div id="wind" ></div>
+        <div id="missile">🚀</div>
+        <div id="startgamebtn" onclick="game()">start!</div>
+        <div id="welcome">Welcome to Airwall! let's play!</div>
+        <button id="levels" onclick="levels()">rules&levels
+        </button>
+        <div id="tener" hidden>
+            <div id="reader">Well done! you finish round!</div>
+            <button id="closetenerbtn" onclick="closetener()">X</button>
+        </div>
+        <div id="levelknow"></div>
+        <div id="alerta"></div>
+        <button id="screenshot" onclick="screenshot()" hidden>screenshot!</button>
+        <div id="coinboard" class="coinboard">
+            <div id="coinlive">Time left:<br>1:00<br><span style="font-size: 15px;"></span></div>
+            </div>
+        <div id="winwrite" hidden>
+            <input type="text" id="winput" placeholder="your name is:">
+            <button onclick="addwin()" id="addnamebtn">add name...</button>
+        </div>
+        <script src="listofwin.js"></script>
+       <script>
+let wallSpeed = 5;     
+let cloudSpeed = 5;
+let coinSpeed = 5;    
+let numberOfClouds = 10; 
+let clouds = [];
+let walls = [];       
+let intervals = [];  
+let gametime = false;
+let timeleft = 120;
+let coins = [];
+let winalways = localStorage.getItem("winalways");
+if (winalways === null) {
+    winalways = false; 
+} else {
+    winalways = (winalways === "true"); 
+}
+function addwin() {
+    const winameInput = document.getElementById("winput"); 
+    const winame = winameInput.value.trim(); 
+    if (!winame) return;
+
+    document.getElementById("winwrite").hidden = true;
+
+    fetch("/addwin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: winame })
+    })
+    .then(res => res.json())
+    .then(data => console.log("Updated namelist:", data.namelist))
+    .catch(err => console.error(err));
+}
+
+
+async function screenshot() {
+    let ok = confirm("Are you sure you want a real screenshot?");
+    if (!ok) return;
+
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "never" }
+    });
+
+    const track = stream.getVideoTracks()[0];
+    const imageCapture = new ImageCapture(track);
+    const bitmap = await imageCapture.grabFrame();
+
+    track.stop();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0);
+
+    const image = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "screenshot.png";
+    link.click();
+}
+
+
+
+
+
+let rulesbtn = document.createElement("button");
+rulesbtn.style.height = "70px";
+rulesbtn.style.width = "250px";
+rulesbtn.style.backgroundColor = "lightgreen";
+rulesbtn.style.fontSize = "20px";
+rulesbtn.textContent = "rules&credits";
+rulesbtn.onclick = function() {
+    window.open("rules.html");
+};
+
+let exitbtn = document.createElement("button");
+exitbtn.style.height = "50px";
+exitbtn.style.width = "50px";
+exitbtn.style.backgroundColor = "red";
+exitbtn.textContent = "X";
+exitbtn.style.fontSize = "20px";
+
+let levelnum = Number(localStorage.getItem("levelnum"));
+if (!levelnum) {
+    levelnum = 1;
+    let firstclass = document.createElement("div");
+    firstclass.style.top = "50%";
+    firstclass.style.left = "50%";
+    firstclass.style.position = "fixed"; 
+    firstclass.style.transform = "translate(-50%, -50%)";
+    firstclass.style.height = "300px";
+    firstclass.style.width = "300px";
+    firstclass.style.backgroundColor = "gold";
+    firstclass.style.zIndex = "10000000000";
+    firstclass.innerHTML = "Welcome to Air wall! are you think<br>can you finish the game?<br>let's see, good luck!";
+    document.body.appendChild(firstclass);
+
+    rulesbtn.style.position = "absolute";
+    rulesbtn.style.bottom = "20px";
+    rulesbtn.style.left = "50%";
+    rulesbtn.style.transform = "translateX(-50%)";
+
+    exitbtn.style.position = "absolute";
+    exitbtn.style.top = "10px";
+    exitbtn.style.right = "10px";
+
+    firstclass.appendChild(rulesbtn);
+    firstclass.appendChild(exitbtn);
+
+    exitbtn.onclick = function() {
+        firstclass.remove();
+    };
+}
+
+let levelist = JSON.parse(localStorage.getItem("levelist")) || [1];
+function addLevel(newLevel) {
+    if (!levelist.includes(newLevel)) {
+        levelist.push(newLevel);
+        localStorage.setItem("levelist", JSON.stringify(levelist)); 
+    }
+}
+const backaudio = new Audio("countback.aac");
+const completeaudio=new Audio("complete.aac");
+function levels() {
+    let folderof = document.createElement("div");
+    folderof.hidden = false;
+    folderof.id = "folderof"; 
+    folderof.style.zIndex = "10000";
+    folderof.style.position = "absolute";
+    folderof.style.height = "400px";
+    folderof.style.width = "400px";
+    folderof.style.backgroundColor = "aquamarine";
+    folderof.style.top = "50%";
+    folderof.style.left = "50%";
+    folderof.style.transform = "translate(-50%, -50%)";
+    folderof.style.display = "flex";
+    folderof.style.flexDirection = "column";
+    folderof.style.alignItems = "center";
+    folderof.style.justifyContent = "center";
+    folderof.style.position = "fixed"; 
+    let entrylevel = document.createElement("input");
+    entrylevel.type = "number";
+    entrylevel.placeholder = "Entry level...";
+    entrylevel.style.fontSize = "20px";
+    entrylevel.style.margin = "10px";
+
+    let btn = document.createElement("button");
+    btn.textContent = "Set Level";
+
+    rulesbtn.style.position = "absolute";
+    rulesbtn.style.bottom = "20px";
+    rulesbtn.style.left = "50%";
+    rulesbtn.style.transform = "translateX(-50%)";
+
+    exitbtn.style.position = "absolute";
+    exitbtn.style.top = "10px";
+    exitbtn.style.right = "10px";
+
+    exitbtn.onclick = function() {
+        folderof.remove();
+    };
+
+    btn.onclick = function() {
+        let level = Number(entrylevel.value);
+
+        if (level <= 0) {
+            alert("Level must be positive");
+        } else if (!Number.isInteger(level)) {
+            alert("You can't write decimal number");
+        } else if (level > Math.max(...levelist)) {
+            alert("Sorry, you are not in this level!");
+        } else {
+            levelnum = level;
+            localStorage.setItem("levelnum", levelnum);
+            document.getElementById("levelknow").textContent = `Stage: ${levelnum}`;
+            addLevel(levelnum); 
+            folderof.remove();
+        }
+    };
+
+    folderof.appendChild(entrylevel);
+    folderof.appendChild(btn);
+    folderof.appendChild(exitbtn);
+    folderof.appendChild(rulesbtn);
+    document.body.appendChild(folderof);
+}
+
+//I am the champion!
+//Kebab--igor
+//Utuuuuuuuuuuurn!!!!!!!!!!!!
+let coinum = levelnum * 5;
+document.getElementById("levelknow").textContent=`Stage: ${levelnum}`;
+for (let i = 0; i < numberOfClouds; i++) {
+    let cloud = document.createElement("div");
+    cloud.innerText = "☁️";
+    cloud.style.position = "absolute";
+    cloud.style.fontSize = "80px";
+    cloud.style.top = Math.random() * (window.innerHeight - 80) + "px";
+    cloud.style.left = (window.innerWidth + i * 200) + "px"; 
+    document.body.appendChild(cloud);
+    clouds.push({ el: cloud, x: window.innerWidth + i * 200 });
+}
+
+let moveWind = setInterval(() => {
+    clouds.forEach(c => {
+        c.x -= cloudSpeed;  
+        c.el.style.left = c.x + "px";
+        if (c.x < -100) { 
+            c.x = window.innerWidth; 
+            c.el.style.top = Math.random() * (window.innerHeight - 80) + "px"; 
+        }
+    });
+}, 10);
+
+let wallCreatorInterval = null;
+let moveUp = false;
+let moveDown = false;
+let missileAnimationRunning = false;
+let timerInterval = null; 
+
+function animateMissile(missile) {
+    if (missileAnimationRunning) return;
+    missileAnimationRunning = true;
+
+    function step() {
+        let currentTop = missile.offsetTop;
+        if (moveUp) missile.style.top = Math.max(0, currentTop - 11) + "px";
+        if (moveDown) missile.style.top = Math.min(window.innerHeight - missile.offsetHeight, currentTop + 11) + "px";
+        requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+function spawnCoin(missile) {
+    if (!gametime) return;
+
+    let coin = document.createElement("div");
+    coin.textContent = "💰";
+    coin.style.position = "absolute";
+    coin.style.fontSize = "50px";
+    coin.style.left = window.innerWidth + "px"; 
+    coin.style.zIndex=100;
+    coin.style.top = (Math.random() * (window.innerHeight - 80)) + "px";
+    document.body.appendChild(coin);
+
+    coins.push(coin); 
+
+    let xCoin = window.innerWidth;
+
+    let coinMove = setInterval(() => {
+        xCoin -= coinSpeed;
+        coin.style.left = xCoin + "px";
+
+        let missileRect = missile.getBoundingClientRect();
+        let coinRect = coin.getBoundingClientRect();
+
+        let hitCoin =
+            missileRect.right > coinRect.left &&
+            missileRect.left < coinRect.right &&
+            missileRect.bottom > coinRect.top &&
+            missileRect.top < coinRect.bottom;
+
+        if (hitCoin || xCoin < -100) {
+            clearInterval(coinMove);
+            coin.remove();
+            coins = coins.filter(c => c !== coin); 
+            if (hitCoin) {
+                if (coinum > 0) coinum--;
+                if (coinum === 0) {
+                    document.getElementById("coinboard").style.backgroundColor = "lightgreen";
+                }
+                localStorage.setItem("levelnum", levelnum);
+            }
+        }
+    }, 10);
+}
+
+let tener=document.getElementById("tener");
+tener.style.zIndex="10000000";
+tener.style.height="300px";
+tener.style.width="300px";
+tener.style.top="50%";
+tener.style.left="50%";
+tener.style.position="absolute";
+tener.style.backgroundColor="gold";
+tener.style.transform="translate(-50%, -50%)";
+async function closetener(){
+    tener.hidden=true;
+}
+function updateCoinLive() {
+    if (!gametime) return;
+
+    if (timeleft > 0) timeleft--;
+
+    let minuts = Math.floor(timeleft / 60);
+    let seconds = (timeleft % 60).toString().padStart(2,'0');
+    if(timeleft===30){
+        document.documentElement.style.background="rgb(120, 120, 180)";
+    }
+    if(timeleft===29){
+        document.documentElement.style.background="rgb(103, 103, 103)";
+    }
+    if(timeleft===28){
+        document.documentElement.style.background="rgb(71, 71, 71)";
+    }
+    if(timeleft===27){
+        document.documentElement.style.background="rgb(50, 50, 50)";
+    }
+    if(timeleft===13){
+        document.documentElement.style.background="rgb(90, 90, 160)";
+    }
+    if(timeleft===12){
+        document.documentElement.style.background="rgb(150, 150, 225)";
+    }
+    if(timeleft===11){
+        document.documentElement.style.background="rgb(200, 200, 255)";
+    }
+    if(timeleft===10){
+        document.documentElement.style.background="lightblue";
+        backaudio.play();
+        
+    }
+    if(timeleft<=30&&timeleft>26){
+        document.getElementById("alerta").textContent="Last helf minute!";
+    } 
+    if(timeleft<=26&&timeleft>13){
+        document.getElementById("alerta").textContent="";
+    }
+    if(timeleft<=13&&timeleft>10){
+        document.getElementById("alerta").textContent="ready for overtime:";
+    }
+    if(timeleft<=10&&timeleft>0){
+        document.getElementById("alerta").textContent=timeleft;
+    }
+    let message = `Time left:<br>${minuts}:${seconds}<br>`;
+    if (coinum === 0 && timeleft > 0) {
+        message += "Survive to win!";
+    } else if (coinum > 0) {
+        message += `more ${coinum} to finish the stage`;
+    }
+
+    document.getElementById("coinlive").innerHTML = message;
+
+    if (coinum === 0 && timeleft === 0) {
+        walls.forEach(w => w.style.backgroundColor = "gold");
+        document.getElementById("alerta").textContent=`stage ${levelnum} complete!`
+        wallSpeed = 80;
+        cloudSpeed = 80;
+        timeleft=60;
+        levelnum++;
+        completeaudio.currentTime=0;
+        completeaudio.play();
+        if((levelnum%10===0)&&levelnum!==(0||100)){
+            tener.hidden=false;
+            
+        }
+        if (!levelist.includes(levelnum)) {
+            levelist.push(levelnum);
+            localStorage.setItem("levelist", JSON.stringify(levelist));
+        }
+        {
+            clouds.hidden=false;
+            localStorage.setItem("levelnum", levelnum);
+            document.getElementById("levelknow").textContent = `Stage: ${levelnum}`;
+        next();
+        }
+    } if(coinum>0&&timeleft===0){
+        document.getElementById("alerta").textContent="";
+    }
+}
+
+let nexta=false;
+
+function next() {
+    setTimeout(() => {
+        nexta = true;
+        wallSpeed = 5;
+        cloudSpeed = 5;
+        document.getElementById("coinboard").style.backgroundColor = "black";
+        coinum = levelnum * 5;
+
+        walls.forEach(w => w.style.backgroundColor = "red");
+        nexta = false;
+        timeleft = 60;
+        document.getElementById("alerta").textContent = "";
+        document.getElementById("levelknow").textContent = `Stage: ${levelnum}`;
+    }, 5000);
+
+    if (levelnum > 100) {
+        clearInterval(timerInterval);
+        walls.forEach(c=>c.remove=true);
+        clearInterval(wallCreatorInterval);
+        if(!winalways){
+            winalways=true;
+            localStorage.setItem("winalways", "true");
+            setTimeout(()=>{
+                document.getElementById("winwrite").hidden=false;
+            }, 5000)
+        }
+        walls=[];
+        coins.forEach(c=>c.remove());
+        coins=[];
+        coinSpeed=0;
+        clouds.forEach(c => c.el.hidden = true);
+        coins.forEach(c=>c.remove=true);
+        document.getElementById("welcome").hidden=false;
+        document.getElementById("levels").hidden=false;
+        document.getElementById("welcome").textContent="you are the champion! thanks you are playing in Air wall!";
+        document.getElementById("welcome").style.color="purple";
+        document.getElementById("welcome").style.fontSize="30px";
+        document.getElementById("alerta").textContent = "you win the game!";
+        document.body.style.backgroundImage = "url('earthpicture.png')";
+                document.documentElement.style.backgroundImage = "url('earthpicture.png')";
+                
+
+document.body.style.backgroundSize = "cover"; 
+document.documentElement.style.backgroundSize = "cover"; 
+        document.getElementById("screenshot").hidden=false;
+    } else {
+        document.body.style.backgroundColor="lightblue";
+                document.documentElement.style.backgroundColor="lightblue";
+
+        document.getElementById("screenshot").hidden=true;
+        coinSpeed=5;
+        document.getElementById("welcome").textContent="Welcome for Airwall! let's play!";
+        document.getElementById("welcome").style.color="black";
+        document.getElementById("welcome").style.fontSize="50px";
+        clouds.forEach(c => c.el.hidden = false);
+    }
+}
+
+function game() {
+    gametime = true;
+    wallSpeed = 5;
+    cloudSpeed = 5;
+    coinSpeed = 5;
+    timeleft = 60;
+    coinum = levelnum * 5;
+    document.getElementById("levels").hidden=true;
+    intervals.forEach(i => clearInterval(i));
+    intervals = [];
+
+    walls.forEach(w => w.remove());
+    walls = [];
+
+    document.getElementById("startgamebtn").hidden = true;
+    document.getElementById("welcome").hidden = true;
+
+    let missile = document.getElementById("missile");
+    animateMissile(missile);
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateCoinLive, 1000);
+
+    wallCreatorInterval = setInterval(() => {
+        if (!gametime) return;
+
+        let gapSize = 180;
+        let gapTop = Math.random() * (window.innerHeight - gapSize);
+
+        let topWall = document.createElement("div");
+        topWall.style.position = "absolute";
+        topWall.style.left = window.innerWidth + "px";
+        topWall.style.top = "0px";
+        topWall.style.width = "120px";
+        topWall.style.height = gapTop + "px";
+        topWall.style.background = "red";
+        topWall.style.zIndex="105";
+
+        let bottomWall = document.createElement("div");
+        bottomWall.style.position = "absolute";
+        bottomWall.style.left = window.innerWidth + "px";
+        bottomWall.style.top = (gapTop + gapSize) + "px";
+        bottomWall.style.width = "120px";
+        bottomWall.style.height = (window.innerHeight - (gapTop + gapSize)) + "px";
+        bottomWall.style.background = "red";
+        bottomWall.style.zIndex="105";
+        if(nexta){
+            document.body.appendChild(topWall).style.backgroundColor="gold";
+            document.body.appendChild(bottomWall).style.backgroundColor="gold";
+        } else{
+            document.body.appendChild(topWall).style.backgroundColor="red";
+        document.body.appendChild(bottomWall).style.backgroundColor="red";
+        }
+        
+        walls.push(topWall, bottomWall);
+
+        let xWall = window.innerWidth;
+
+        let moveWall = setInterval(() => {
+            xWall -= wallSpeed; 
+            topWall.style.left = xWall + "px";
+            bottomWall.style.left = xWall + "px";
+
+            if (xWall < -200) {
+                clearInterval(moveWall);
+                topWall.remove();
+                bottomWall.remove();
+            }
+
+            let missileRect = missile.getBoundingClientRect();
+            let topRect = topWall.getBoundingClientRect();
+            let bottomRect = bottomWall.getBoundingClientRect();
+
+            let hitTop = missileRect.right > topRect.left &&
+                          missileRect.left < topRect.right &&
+                          missileRect.top < topRect.bottom;
+
+            let hitBottom = missileRect.right > bottomRect.left &&
+                            missileRect.left < bottomRect.right &&
+                            missileRect.bottom > bottomRect.top;
+
+            if ((hitTop || hitBottom) &&
+    topWall.style.backgroundColor === "red" &&
+    bottomWall.style.backgroundColor === "red") {
+                defeat();
+                clearInterval(moveWall);
+            }
+        }, 10);
+
+        intervals.push(moveWall);
+
+    }, 1350);
+
+    setInterval(() => spawnCoin(missile), 3000);
+
+    document.onkeydown = function(e) {
+        if (e.key === "ArrowUp") moveUp = true;
+        if (e.key === "ArrowDown") moveDown = true;
+    };
+    document.onkeyup = function(e) {
+        if (e.key === "ArrowUp") moveUp = false;
+        if (e.key === "ArrowDown") moveDown = false;
+    };
+}
+
+function defeat() {
+    backaudio.pause();
+    backaudio.currentTime = 0;
+
+    if(!nexta){
+        alert("Try again!");
+    } else {
+        alert(`level ${levelnum} complete`)
+    }
+    document.getElementById("levels").hidden=false;
+    document.getElementById("alerta").textContent="";
+    document.documentElement.style.background="lightblue";
+    gametime = false;
+    moveUp = false;
+    moveDown = false;
+    coinum=levelnum*5;
+    document.getElementById("coinboard").style.backgroundColor = "black";
+    walls.forEach(w => w.remove());
+    walls = [];
+    intervals.forEach(i => clearInterval(i));
+    intervals = [];
+    clearInterval(wallCreatorInterval);
+    wallCreatorInterval = null;
+    wallSpeed = 0;
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+
+    document.getElementById("startgamebtn").hidden = false;
+    document.getElementById("welcome").hidden = false;
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+    </body>
+</html>

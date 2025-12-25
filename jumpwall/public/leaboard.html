@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <style>
+            #block{
+                height: auto; /* גובה דינמי לפי כמות השמות */
+                width: 300px;
+                position: absolute;
+                top: 150px; /* שינוי קטן כדי לא להצטלב עם h1 */
+                left: 27%;
+            }
+            h1{
+                left: 27%;
+                position: absolute;
+                font-size: 80px;
+                font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            }
+            .name-block {
+                padding: 5px 10px;
+                margin: 5px 0;
+                background-color: lightblue;
+                border: 1px solid #000;
+                border-radius: 5px;
+                font-size: 24px;
+            }
+        </style>
+
+        <h1>Winners list:</h1>
+        <div id="block">
+            <div id="nameofwinner"></div>
+        </div>
+
+        <script>
+            const nameofwinner = document.getElementById("nameofwinner");
+
+            // משיכה של השמות מהשרת
+            async function loadNames() {
+                try {
+                    const res = await fetch("/namelist");
+                    const data = await res.json();
+                    const names = data.namelist || [];
+
+                    // ניקוי קודם אם יש תוכן
+                    nameofwinner.innerHTML = "";
+
+                    // יצירת בלוק על כל שם
+                    names.forEach((name, i) => {
+                        const nameDiv = document.createElement("div");
+                        nameDiv.className = "name-block";
+                        nameDiv.textContent = `${i + 1}. ${name}`;
+                        nameofwinner.appendChild(nameDiv);
+                    });
+                } catch (err) {
+                    console.error("Failed to load names:", err);
+                }
+            }
+
+            loadNames();
+        </script>
+    </body>
+</html>
