@@ -733,14 +733,15 @@ function game() {
 
     setInterval(() => spawnCoin(missile), 3000);
 
-    document.onkeydown = function(e) {
-        if (e.key === "ArrowUp") moveUp = true;
-        if (e.key === "ArrowDown") moveDown = true;
-    };
-    document.onkeyup = function(e) {
-        if (e.key === "ArrowUp") moveUp = false;
-        if (e.key === "ArrowDown") moveDown = false;
-    };
+   document.onkeydown = function(e) {
+    if (e.key === "ArrowUp" || e.key === "w") moveUp = true;
+    if (e.key === "ArrowDown" || e.key === "s") moveDown = true;
+};
+document.onkeyup = function(e) {
+    if (e.key === "ArrowUp" || e.key === "w") moveUp = false;
+    if (e.key === "ArrowDown" || e.key === "s") moveDown = false;
+};
+
 }
 
 function defeat() {
@@ -788,3 +789,4 @@ function defeat() {
 
     </body>
 </html>
+
